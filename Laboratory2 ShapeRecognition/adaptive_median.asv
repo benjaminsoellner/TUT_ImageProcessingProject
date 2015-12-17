@@ -1,0 +1,28 @@
+function filteredSignal = adaptive_median(signal, maxWindowSize)
+    paddedSignal = [signal(1)*ones(1,maxWindowSize/2), signal, signal(length(signal))*ones(1,maxWindowSize/2)];
+    for i = maxWindowSize/2:length(paddedSignal)-maxWindowSize/2
+        paddedSignal(i) = adaptive_median_window(paddedSignal, i, 3, maxWindowSize);
+    end
+    filteredSignal = paddedSignal;
+end
+
+function value = adaptive_median_window(signal, i, windowSize, maxWindowSize)
+    S = signal(i-floor(windowSize/2):i+ceil(windowSize/2));
+    A1 = median(S)-min(S);
+    A2 = median(S)-max(S);
+    if A1>0 & A2<0
+        B1 = signal(i) - min(S);
+        B2 = signal(i) - max(S);
+        if B1>0 & B2<0
+            value = signal(i);
+        else
+            value = median(S);
+        end
+    else
+        if windowSize < maxWindowSize
+            value = adaptive_median_window(signal, i, windowSize+1, maxWindowSize)
+        else
+            value = median(S);
+        end
+    end
+end
